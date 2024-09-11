@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎮 Jeu de Morpion Next.js
 
-## Getting Started
+Ce projet est un jeu de morpion avancé développé avec Next.js, offrant plusieurs modes de jeu et fonctionnalités innovantes.
 
-First, run the development server:
+## ✨ Fonctionnalités
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1. 👥 Mode Deux Joueurs
+- Jouable à deux sur le même appareil
+- Gestion des points pour chaque joueur
+- Système de tour par tour
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 🤖 Mode Solo contre l'IA
+- Jouez contre une IA avec plusieurs niveaux de difficulté
+- Comptage des points
+- Tour par tour
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. 🔄 Mode Effacement (Deux Joueurs et Solo)
+- Les croix ou ronds les plus anciens sont effacés tous les 3 coups
+- Prolonge la durée des parties
+- Ajoute un élément stratégique supplémentaire
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🕹️ Comment jouer
 
-## Learn More
+1. Choisissez votre mode de jeu : Deux Joueurs, Solo contre l'IA, ou Mode Effacement
+2. Pour le mode Solo, sélectionnez le niveau de difficulté de l'IA
+3. Jouez à tour de rôle en cliquant sur les cases vides
+4. En mode Effacement, soyez attentif aux symboles qui disparaîtront
+5. Le premier à aligner 3 symboles gagne la manche
+6. Les points sont cumulés à chaque victoire
 
-To learn more about Next.js, take a look at the following resources:
+## 💻 Développement
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ce jeu est développé avec Next.js. Pour contribuer ou lancer le projet localement :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clonez le repository
+2. Installez les dépendances avec `npm install`
+3. Lancez le serveur de développement avec `npm run dev`
+4. Ouvrez `http://localhost:3000` dans votre navigateur
 
-## Deploy on Vercel
+## 🚀 Prochaines étapes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Implémenter l'interface utilisateur
+- Développer la logique du jeu pour chaque mode
+- Créer l'IA avec différents niveaux de difficulté
+- Ajouter un système de sauvegarde des scores
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+N'hésitez pas à contribuer ou à suggérer des améliorations ! 🌟
