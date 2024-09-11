@@ -2,6 +2,13 @@
 
 Ce projet est un jeu de morpion avancé développé avec Next.js, offrant plusieurs modes de jeu et fonctionnalités innovantes.
 
+## 🛠️ Technologies utilisées
+
+- **Next.js** : Framework React pour le développement web
+- **React** : Bibliothèque JavaScript pour la construction d'interfaces utilisateur
+- **TypeScript** : Superset typé de JavaScript pour un développement plus robuste
+- **Tailwind CSS** : Framework CSS utilitaire pour un design rapide et personnalisable
+
 ## ✨ Fonctionnalités
 
 ### 1. 👥 Mode Deux Joueurs
