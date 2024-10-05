@@ -222,7 +222,7 @@ export default function Home() {
                 onClick={() => startNewGame('ai')} 
                 className={`px-2 py-1 text-xs font-semibold rounded ${gameMode === 'ai' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
               >
-                Contre l'IA
+                Contre l&apos;IA
               </button>
               <button 
                 onClick={() => startNewGame('erasing')} 
