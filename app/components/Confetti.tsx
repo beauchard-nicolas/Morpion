@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 interface ConfettiProps {
   winner: 'X' | 'O' | null;
@@ -17,6 +17,17 @@ interface Particle {
 
 const Confetti: React.FC<ConfettiProps> = ({ winner }) => {
   const [particles, setParticles] = useState<Particle[]>([]);
+
+  const animate = useCallback(() => { // Utilisation de useCallback
+    setParticles(prevParticles =>
+      prevParticles.map(particle => ({
+        ...particle,
+        x: particle.x + particle.velocity.x,
+        y: particle.y + particle.velocity.y,
+        rotation: particle.rotation + 2,
+      })).filter(particle => particle.y < window.innerHeight)
+    );
+  }, []); // Suppression de 'winner' du tableau de dépendances
 
   useEffect(() => {
     if (!winner) return;
@@ -42,20 +53,7 @@ const Confetti: React.FC<ConfettiProps> = ({ winner }) => {
     const animationFrame = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(animationFrame);
-  }, [winner]);
-
-  const animate = () => {
-    setParticles(prevParticles =>
-      prevParticles.map(particle => ({
-        ...particle,
-        x: particle.x + particle.velocity.x,
-        y: particle.y + particle.velocity.y,
-        rotation: particle.rotation + 2,
-      })).filter(particle => particle.y < window.innerHeight)
-    );
-
-    requestAnimationFrame(animate);
-  };
+  }, [animate, winner]); // Ajout de 'animate' et 'winner' au tableau de dépendances
 
   if (!winner) return null;
 
