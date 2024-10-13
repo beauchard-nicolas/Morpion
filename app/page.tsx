@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Board from './components/Board';
 import { calculateWinner } from './lib/gameLogic';
 import { CrownIcon } from 'lucide-react';
@@ -25,30 +25,23 @@ export default function Home() {
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [winner, setWinner] = useState<'X' | 'O' | null>(null);
 
-  useEffect(() => {
-    const current = history[stepNumber];
-    const winner = calculateWinner(current);
-    
-    console.log("État actuel:", { gameMode, xIsNext, stepNumber, boardState: current });
-    console.log("Gagnant:", winner);
-    console.log("Jeu terminé:", gameOver);
+  const updateNextToErase = useCallback((squares: SquareState[]) => {
+    const currentPlayer = xIsNext ? 'X' : 'O';
+    const playerMoveCount = squares.filter(square => square.value === currentPlayer).length;
 
-    if (winner && !gameOver) {
-      setGameOver(true);
-      // Ne mettez pas à jour le score ici, car c'est déjà fait dans handleClick
-    } else if (current.every(square => square.value !== null) && !gameOver) {
-      setGameOver(true);
-    } else if (gameMode === 'ai' && !xIsNext && !gameOver) {
-      console.log("C'est le tour de l'IA");
-      setTimeout(() => makeAIMove(current), 500);
+    if (gameMode === 'erasing' && playerMoveCount >= 3) {
+      const oldestMoveIndex = findOldestMove(squares, currentPlayer);
+      setNextToErase(oldestMoveIndex);
+    } else {
+      setNextToErase(null);
     }
-  }, [history, stepNumber, gameMode, xIsNext, gameOver]);
+  }, [gameMode, xIsNext]);
 
   useEffect(() => {
     if (history.length > 0) {
       updateNextToErase(history[stepNumber]);
     }
-  }, [gameMode, history, stepNumber]);
+  }, [gameMode, history, stepNumber, xIsNext, updateNextToErase]);
 
   const updateLeaderPlayer = (newScores: { X: number, O: number }) => {
     if (newScores.X > newScores.O) {
@@ -60,7 +53,7 @@ export default function Home() {
     }
   };
 
-  const eraseOldestMove = (squares: SquareState[], currentPlayer: 'X' | 'O') => {
+  const eraseOldestMove = useCallback((squares: SquareState[], currentPlayer: 'X' | 'O') => {
     console.log("Tentative d'effacement du plus ancien coup pour", currentPlayer);
     let oldestMoveIndex = -1;
     let oldestTimestamp = Infinity;
@@ -80,7 +73,7 @@ export default function Home() {
     }
     console.log("Aucun coup à effacer");
     return squares;
-  };
+  }, []);
 
   const findOldestMove = (squares: SquareState[], currentPlayer: 'X' | 'O') => {
     let oldestMoveIndex = -1;
@@ -96,59 +89,52 @@ export default function Home() {
     return oldestMoveIndex;
   };
 
-  const updateNextToErase = (squares: SquareState[]) => {
-    const currentPlayer = xIsNext ? 'X' : 'O';
-    const playerMoveCount = squares.filter(square => square.value === currentPlayer).length;
-
-    if (gameMode === 'erasing' && playerMoveCount >= 3) {
-      const oldestMoveIndex = findOldestMove(squares, currentPlayer);
-      setNextToErase(oldestMoveIndex);
-    } else {
-      setNextToErase(null);
-    }
-  };
-
-  const handleClick = (i: number) => {
-    if (gameOver) {
-      return;
-    }
-
-    const newHistory = history.slice(0, stepNumber + 1);
-    const current = [...newHistory[newHistory.length - 1]];
+  const handleClick = useCallback((i: number) => {
+    const current = [...history[stepNumber]];
     if (current[i].value) {
       return;
     }
 
     const currentPlayer = xIsNext ? 'X' : 'O';
     let updatedSquares = [...current];
-    updatedSquares[i] = { value: currentPlayer, timestamp: Date.now() };
 
+    // Vérifiez si le mode de jeu est 'erasing' et que nextToErase n'est pas null
     if (gameMode === 'erasing' && nextToErase !== null) {
       updatedSquares[nextToErase] = { value: null, timestamp: null };
+      // Supprimez le coup le plus ancien uniquement si le joueur actuel est le même que celui qui a joué le coup
+      if (updatedSquares[nextToErase].value === currentPlayer) {
+        updatedSquares = eraseOldestMove(updatedSquares, currentPlayer);
+      }
     }
+
+    updatedSquares[i] = { value: currentPlayer, timestamp: Date.now() };
 
     const result = calculateWinner(updatedSquares);
     if (result) {
       setGameOver(true);
       setWinner(result.winner as 'X' | 'O');
-      setScores(prevScores => ({
-        ...prevScores,
-        [result.winner]: prevScores[result.winner as 'X' | 'O'] + 1
-      }));
+      setScores(prevScores => {
+        const updatedScores = {
+          ...prevScores,
+          [result.winner]: prevScores[result.winner as 'X' | 'O'] + 1
+        };
+        updateLeaderPlayer(updatedScores);
+        return updatedScores;
+      });
       setWinningLine(result.line);
     } else if (updatedSquares.every(square => square.value !== null)) {
       setGameOver(true);
     }
 
-    setHistory([...newHistory, updatedSquares]);
-    setStepNumber(newHistory.length);
+    setHistory([...history, updatedSquares]);
+    setStepNumber(history.length);
     setXIsNext(!xIsNext);
 
     // Mettre à jour nextToErase pour le prochain tour
     updateNextToErase(updatedSquares);
-  };
+  }, [history, stepNumber, xIsNext, gameMode, nextToErase, updateNextToErase, eraseOldestMove]);
 
-  const makeAIMove = (current: SquareState[]) => {
+  const makeAIMove = useCallback((current: SquareState[]) => {
     console.log("L'IA fait son mouvement");
     const availableMoves = current.reduce((acc, square, index) => {
       if (!square.value) acc.push(index);
@@ -163,7 +149,7 @@ export default function Home() {
     } else {
       console.log("Aucun mouvement disponible pour l'IA");
     }
-  };
+  }, [handleClick]);
 
   const resetGame = () => {
     setHistory([Array(9).fill({ value: null, timestamp: null })]);
@@ -182,6 +168,24 @@ export default function Home() {
     resetGame();
     // Ne réinitialisez pas les scores ici
   };
+
+  useEffect(() => {
+    const current = history[stepNumber];
+    const winner = calculateWinner(current);
+    
+    console.log("État actuel:", { gameMode, xIsNext, stepNumber, boardState: current });
+    console.log("Gagnant:", winner);
+    console.log("Jeu terminé:", gameOver);
+
+    if (winner && !gameOver) {
+      setGameOver(true);
+    } else if (current.every(square => square.value !== null) && !gameOver) {
+      setGameOver(true);
+    } else if (gameMode === 'ai' && !xIsNext && !gameOver) {
+      console.log("C'est le tour de l'IA");
+      setTimeout(() => makeAIMove(current), 500); // Utilisation de makeAIMove ici
+    }
+  }, [history, stepNumber, gameMode, xIsNext, gameOver, makeAIMove]);
 
   const current = history[stepNumber];
   const winnerResult = calculateWinner(current);
@@ -244,12 +248,14 @@ export default function Home() {
                 <div className="flex items-center">
                   <span className="text-xl font-bold text-blue-400 mr-1">X</span>
                   <span className="text-lg text-white">{scores.X}</span>
-                  {leaderPlayer === 'X' && <CrownIcon className="text-yellow-400 ml-1" size={16} />}
+                  {/* Affiche l'icône pour le joueur X, à droite du score */}
+                  {leaderPlayer === 'X' && <CrownIcon className="text-yellow-400 ml-1" size={16} />} 
                 </div>
                 <div className="flex items-center">
+                  {/* Affiche l'icône pour le joueur O, à gauche du score */}
+                  {leaderPlayer === 'O' && <CrownIcon className="text-yellow-400 mr-1" size={16} />} 
                   <span className="text-lg text-white">{scores.O}</span>
                   <span className="text-xl font-bold text-red-400 ml-1">O</span>
-                  {leaderPlayer === 'O' && <CrownIcon className="text-yellow-400 ml-1" size={16} />}
                 </div>
               </div>
             </div>
